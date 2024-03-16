@@ -8,5 +8,8 @@ c920_conv:
 rvv_conv:
 	riscv64-unknown-linux-gnu-gcc rvv_conv2d_f32.c -o rvv_conv2d_f32.elf -I../install_nn2/rvv/include/shl_public ../install_nn2/rvv/lib/libshl_rvv.a -lm -static
 
+ref_conv:
+	riscv64-unknown-linux-gnu-gcc ref_conv2d_f32.c -o ref_conv2d_f32.elf -I../install_nn2/rvv/include/shl_public ../install_nn2/rvv/lib/libshl_rvv.a -lm -static -fopenmp
+
 clean:
 	rm -rf *.elf
