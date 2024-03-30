@@ -48,6 +48,18 @@ if(CONFIG_BUILD_RISCV_RVV)
     install(TARGETS rvv_static DESTINATION lib)
 endif()
 
+if(CONFIG_BUILD_RISCV_RVV0p7)
+    # build rvv a
+    include(cmake/rules.cmake)
+    LIST(APPEND RVV_LST ${NN2_SRCS} ${REF_SRCS} ${GREF_SRCS} ${THEAD_RVV_SRCS})
+    add_library(rvv_static STATIC ${RVV_LST})
+    SET_TARGET_PROPERTIES(rvv_static PROPERTIES OUTPUT_NAME "shl_rvv")
+    set(RVV_BUILD_FLAGS -ffp-contract=off -march=rv64gcv0p7_zfh_xtheadc -mabi=lp64d -DSHL_BUILD_RVV -DSHL_BUILD_REF -DSHL_BUILD_GREF)
+    target_compile_options(rvv_static PRIVATE ${RVV_BUILD_FLAGS})
+
+    install(TARGETS rvv_static DESTINATION lib)
+endif()
+
 if(CONFIG_BUILD_RISCV_C906)
     # build c906 lib
     set(CONFIG_GRAPH_REFERENCE_TVMGEN ON)
