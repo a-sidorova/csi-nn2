@@ -6,14 +6,6 @@ set(SHL_MAJOR_VERSION 2)
 
 enable_language(ASM)
 
-if(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/config.cmake)
-  include(${CMAKE_CURRENT_BINARY_DIR}/config.cmake)
-else()
-  if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/config.cmake)
-    include(${CMAKE_CURRENT_SOURCE_DIR}/config.cmake)
-  endif()
-endif()
-
 # SHL debug module
 add_definitions(-DSHL_DEBUG)
 # SHL disable xtheadvdot extension
@@ -37,7 +29,7 @@ set(SHL_LIBS shl)
 include_directories(${SHL_INCLUDE_DIRS})
 include_directories(${SHL_SRC_DIR})
 
-target_include_directories(shl PRIVATE ${SHL_INCLUDE_DIRS})
+target_include_directories(shl PUBLIC ${SHL_INCLUDE_DIRS})
 target_include_directories(shl PRIVATE ${SHL_SRC_DIR})
 
 set(SHL_RVV_BUILD_FLAGS -ffp-contract=off -march=rv64gcv0p7_zfh_xtheadc -mabi=lp64d -DSHL_BUILD_RVV -DSHL_BUILD_REF -DSHL_BUILD_GREF)
