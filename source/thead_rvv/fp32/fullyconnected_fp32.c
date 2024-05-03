@@ -30,25 +30,29 @@ static void reorder_weight_npack2n_fp32(const float *src, float *dst, int n, int
     const int packn = csrr_vlenb() / sizeof(float);
     const int pack2n = packn * 2;
 
-    int i = 0;
     int vl = vsetvl_e32m2(pack2n);
-    for (; i + pack2n - 1 < n; i += pack2n) {
-        const float *s_ptr = src + i * k;
+    int num = (float)(n) / pack2n;
+#pragma omp parallel
+    for (int i = 0; i < num; i += 1) {
+        const float *s_ptr = src + i * pack2n * k;
+        float* d_ptr = dst + i * k * vl;
         for (int j = 0; j < k; j++) {
             vfloat32m2_t _src = vlse32_v_f32m2(s_ptr, k * sizeof(float), vl);
-            vse32_v_f32m2(dst, _src, vl);
+            vse32_v_f32m2(d_ptr, _src, vl);
             s_ptr += 1;
-            dst += vl;
+            d_ptr += vl;
         }
     }
+    int i = num * pack2n;
+    float* d_ptr = dst + i * k * vl;
     while (i < n) {
         int vl = vsetvl_e32m1(n - i);
         const float *s_ptr = src + i * k;
         for (int j = 0; j < k; j++) {
             vfloat32m1_t _src = vlse32_v_f32m1(s_ptr, k * sizeof(float), vl);
-            vse32_v_f32m1(dst, _src, vl);
+            vse32_v_f32m1(d_ptr, _src, vl);
             s_ptr += 1;
-            dst += vl;
+            d_ptr += vl;
         }
         i += vl;
     }
