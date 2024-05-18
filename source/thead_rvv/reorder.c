@@ -2083,11 +2083,10 @@ void shl_rvv_reorder_a_block_12xk_fp32(float *src, float *dst, int m, int k, con
                                        const int K_BLK)
 {
     int m_block = M_BLK;
-    int m_idx = 0;
-    while (m_idx < m) {
-        if (m - m_idx < m_block) {
-            m_block = m - m_idx;
-        }
+
+    int primary_work_amount = m / m_block * m_block;
+#pragma omp parallel for
+    for (int m_idx = 0; m_idx < primary_work_amount; m_idx += m_block) {
         int k_block = K_BLK;
         int k_idx = 0;
         while (k_idx < k) {
@@ -2100,6 +2099,20 @@ void shl_rvv_reorder_a_block_12xk_fp32(float *src, float *dst, int m, int k, con
             k_idx += k_block;
         }
         m_idx += m_block;
+    }
+
+    int m_idx = primary_work_amount;
+    m_block = m - m_idx;
+    int k_block = K_BLK;
+    int k_idx = 0;
+    while (k_idx < k) {
+        if (k - k_idx < k_block) {
+            k_block = k - k_idx;
+        }
+        float *s_ptr = src + m_idx * k + k_idx;
+        float *d_ptr = dst + m_idx * k + k_idx * m_block;
+        reorder_a_12xk_fp32(s_ptr, d_ptr, m_block, k_block, k);
+        k_idx += k_block;
     }
 }
 

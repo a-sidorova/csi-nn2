@@ -18,6 +18,8 @@
 
 #include "rvv/rvv.h"
 
+#include <stdio.h>
+
 /*************************************************************
  * packn = vlenb / sizeof(float)
  * m_blk: 12/8/4/2/1
@@ -40,8 +42,10 @@ void shl_rvv_gemm_a0b1_12xpack2n_fp32(float *dst, const float *sa, const float *
         bias = (float *)shl_mem_alloc(N * sizeof(float));
     }
 
-    int i = 0;
-    for (; i + 11 < M; i += 12) {
+    int primary_block = 12;
+    int primary_work_amount = M / primary_block * primary_block;
+#pragma omp parallel for
+    for (int i = 0; i < primary_work_amount; i += primary_block) {
         const float *sa_ptr = sa + i * K;
         int j = 0;
         int vl = vsetvl_e32m1(packn);
@@ -191,6 +195,7 @@ void shl_rvv_gemm_a0b1_12xpack2n_fp32(float *dst, const float *sa, const float *
             j += vl;
         }
     }
+    int i = primary_work_amount;
     for (; i + 7 < M; i += 8) {
         const float *sa_ptr = sa + i * K;
         int j = 0;
